@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import List
 
 import torch
 from attr import define, field
@@ -12,10 +11,9 @@ from DECODE.layers.unsuper_net import UnsuperNet
 
 
 @define
-class DnmfConfig:
+class DecodeConfig:
     use_gedit: bool = field(repr=False)
     use_w0: bool = field()
-    w1_option: str = field()
     mix_path: Path = field(repr=False)
     ref_path: Path = field(repr=False)
     dist_path: Path = field(repr=False)
@@ -27,11 +25,9 @@ class DnmfConfig:
     l1_regularization = field(default=0)
     l2_regularization = field(default=1)
     supervised_train = field(default=80000, repr=True)
-    unsupervised_train = field(default=10000, repr=True)
-    lr: float = field(default=0.005, repr=False)
+    lr: float = field(default=0.002, repr=False)
     dirichlet_alpha = field(default=1, repr=False)
     rewrite_exists_output: bool = field(default=True, repr=False)
-    inner_loop_size: int = field(default=1, repr=False)
     device = field(default=torch.device("cuda:0" if torch.cuda.is_available() else "cpu"), repr=False)
 
     @property
@@ -50,26 +46,12 @@ class DnmfConfig:
 
     def full_str(self):
         print(self.device)
-        return f"{str(self)}, mix_path: {self.mix_path.name}, ref: {self.ref_path.name}, lr: {self.lr}, supervised_train: {self.supervised_train}, unsupervised_train: {self.unsupervised_train} device: {self.device}"
-
-
-@define
-class DnmfRange:
-    w1_options: List[int] = field()
-    unsupervised_lr: float = field()
-
-    def iterate_over_config(self, config: DnmfConfig):
-        original_lr = config.lr
-        config.lr = self.unsupervised_lr
-        for w1 in self.w1_options:
-            config.w1_option = w1
-            yield config
-        config.lr = original_lr
+        return f"{str(self)}, mix_path: {self.mix_path.name}, ref: {self.ref_path.name}, lr: {self.lr}, supervised_train: {self.supervised_train} device: {self.device}"
 
 
 @define
 class UnsupervisedLearner:
-    config: DnmfConfig = field()
+    config: DecodeConfig = field()
     deep_nmf: UnsuperNet = field()
     optimizer: Optimizer = field()
     mix_max: ndarray = field()
