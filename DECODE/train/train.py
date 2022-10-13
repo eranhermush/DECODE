@@ -45,7 +45,9 @@ def train_manager(config: DecodeConfig, to_train: bool = True) -> Optional[Unsup
         return learner
     else:
         deep_nmf_original, h_0_train, optimizer = _init_decode(ref_panda_gedit, mix_panda.T, config)
-        learner = UnsupervisedLearner(config, deep_nmf_original, optimizer, mix_panda.T, dist_panda, h_0_train)
+        learner = UnsupervisedLearner(
+            config, deep_nmf_original, optimizer, mix_panda.T, dist_panda, h_0_train, ref_panda_gedit
+        )
         return learner
 
 
@@ -117,7 +119,7 @@ def _find_loss(
     if dist_mix_i_tensor is not None:
         normalize_matrix_loss = torch.sqrt(criterion(normalize_out, dist_mix_i_tensor))
 
-    return loss2, normalize_matrix_loss.item(), normalize_out
+    return loss2, normalize_matrix_loss, normalize_out
 
 
 def train_unsupervised_real_data(
@@ -237,11 +239,9 @@ def train_with_generated_data(
             ref_mat, mix_frame.T, generated_dist, deep_nmf, optimizer, config.device
         )
         if train_index == supervised_train:
-            config.supervised_train = train_index
             checkpoint = {"deep_nmf": deep_nmf, "config": config}
             with open(str(config.output_path) + "GENERATED.pkl", "wb") as f:
                 pickle.dump(checkpoint, f)
-            config.supervised_train = supervised_train + 1
 
 
 def train_supervised_one_sample(

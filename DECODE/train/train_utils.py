@@ -25,8 +25,6 @@ def _init_decode(ref_mat: ndarray, mix_max: ndarray, config: DecodeConfig) -> Tu
     features, n_components = ref_mat.shape
     samples, features = mix_max.shape
     deep_nmf = UnsuperNet(config.num_layers, n_components, features, config.l1_regularization, config.l2_regularization)
-    for w in deep_nmf.parameters():
-        w.data = (2 + torch.randn(w.data.shape, dtype=w.data.dtype)) * np.sqrt(2.0 / w.data.shape[0]) * 150
     h_0_train = _tensoring(
         np.asanyarray(
             [np.random.dirichlet(np.random.randint(1, 20, size=n_components)) for i in range(samples)], dtype=float
