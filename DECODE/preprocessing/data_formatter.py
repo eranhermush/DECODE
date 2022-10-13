@@ -14,7 +14,7 @@ def format_dataframe(
     Assumes that the dimensions are:
     ref_mat: genes * cells
     mix_dist: samples * cells
-    nux_mat: genes * samples
+    mix_mat: genes * samples
     """
     ref_mat = ref_mat.rename(_convert_name, axis="columns")
     mix_dist = mix_dist.rename(_convert_name, axis="columns")
@@ -27,14 +27,6 @@ def format_dataframe(
     difference_cells = mix_dist.columns.difference(ref_mat.columns)
     if OTHER_NAME in mix_dist.T.index and OTHER_NAME not in difference_cells:
         difference_cells.append(Index([OTHER_NAME]))
-    mix_relevant_indexes = mix_dist[difference_cells].sum(axis=1) < 0.51
-    print(
-        f"Remove {list(difference_cells), len(difference_cells)} cells, Work with {len(mix_dist[mix_relevant_indexes])} samples / {mix_dist.shape[0]} samples"
-    )
-    mix_dist = mix_dist[mix_relevant_indexes]
-    if mix_mat is not None:
-        mix_mat = mix_mat.T[mix_relevant_indexes]
-        mix_mat = mix_mat.T
     mix_dist = mix_dist.drop(difference_cells, axis=1)
     assert mix_dist.columns.tolist() == ref_mat.columns.tolist()
     return ref_mat, mix_dist, mix_mat

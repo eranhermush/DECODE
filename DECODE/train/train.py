@@ -34,8 +34,6 @@ def train_manager(config: DnmfConfig, to_train: bool = True) -> Optional[Unsuper
     mix_panda_original.columns = mix_panda_original.columns.str.upper()
 
     dist_panda = pd.read_csv(config.dist_path, sep="\t", index_col=0)
-    dist_panda.index = mix_panda_original.columns
-    dist_panda.index = dist_panda.index.str.upper()
 
     ref_panda_gedit, mix_panda, indexes, dist_panda = _preprocess_dataframes(
         ref_panda, mix_panda_original, dist_panda, config
@@ -53,26 +51,6 @@ def train_manager(config: DnmfConfig, to_train: bool = True) -> Optional[Unsuper
             config, deep_nmf_original, optimizer, mix_panda.T, dist_panda, h_0_train, ref_panda_gedit
         )
         return learner
-
-
-def _handle_final_matrix(
-    config: DnmfConfig, out: tensor, out34: tensor, deep_nmf: UnsuperNet, dist_panda: DataFrame
-) -> None:
-    dist_new = dist_panda.copy()
-    criterion = nn.MSELoss(reduction="mean")
-    loss = torch.sqrt(criterion(out, _tensoring(dist_panda.values).to(config.device)))
-    loss34 = torch.sqrt(criterion(out34, _tensoring(dist_panda.values).to(config.device)))
-    checkpoint = {"loss": loss, "loss34": loss34, "deep_nmf": deep_nmf, "config": config}
-    print(f"final results: loss: {loss}, loss34: {loss34}")
-    with open(str(config.output_path) + ".pkl", "wb") as f:
-        pickle.dump(checkpoint, f)
-    dist_new[:] = out.cpu().detach().numpy()
-    dist_new.to_csv(config.output_path, sep="\t")
-
-    dist_new[:] = out34.cpu().detach().numpy()
-    dist_new.to_csv(str(config.output_path) + "34.tsv", sep="\t")
-
-    print(f'Finish time: {datetime.now().strftime("%d-%m, %H:%M:%S")}')
 
 
 def _create_output_file(config: DnmfConfig) -> bool:
@@ -147,29 +125,19 @@ def _train_dnmf(
     return learner
 
 
-def handle_best(learner: UnsupervisedLearner) -> None:
-    config = learner.config
-    dist_mix_i = learner.dist_mix_i
-    out, out34, deep_nmf, best_34_obj, best_i = _train_unsupervised(learner)
-    _handle_final_matrix(config, out, out34, deep_nmf, dist_mix_i)
-
-    dist_new = dist_mix_i.copy()
-    dist_new[:] = best_34_obj.cpu().detach().numpy()
-    i = config.unsupervised_train
-    config.unsupervised_train = best_i
-    dist_new.to_csv(config.output_path, sep="\t")
-    config.unsupervised_train = i
-
-
 def _find_loss(
     out: tensor,
-    dist_mix_i_tensor: tensor,
+    dist_mix_i_tensor: Optional[tensor],
 ) -> Tuple[tensor, float, tensor]:
     criterion = nn.MSELoss(reduction="mean")
-    loss2 = torch.sqrt(criterion(out, dist_mix_i_tensor))
+    loss2 = -1
+    if dist_mix_i_tensor is not None:
+        loss2 = torch.sqrt(criterion(out, dist_mix_i_tensor))
 
     out34 = out / (torch.clamp(out.sum(axis=1)[:, None], min=1e-12))
-    loss34 = torch.sqrt(criterion(out34, dist_mix_i_tensor))
+    loss34 = -1
+    if dist_mix_i_tensor is not None:
+        loss34 = torch.sqrt(criterion(out34, dist_mix_i_tensor))
 
     return loss2, loss34.item(), out34
 
@@ -181,14 +149,12 @@ def _train_unsupervised(
     config = learner.config
     mix_max = _tensoring(learner.mix_max).to(config.device)
     optimizer = learner.optimizer
-    dist_mix_i_tensor = _tensoring(learner.dist_mix_i.to_numpy()).to(config.device)
     h_0 = learner.h_0.to(config.device)
 
     inputs = (h_0, mix_max)
     torch.autograd.set_detect_anomaly(True)
     out = ndarray([])
     out34 = ndarray([])
-    best_34 = 2
     best_34_obj = out
     best_i = 0
     loss = None
@@ -198,11 +164,6 @@ def _train_unsupervised(
     unsupervised_losses = []
     for i in range(config.unsupervised_train):
         out, loss = deep_nmf(*inputs)
-
-        criterion = nn.MSELoss(reduction="mean")
-        loss22 = criterion(out, nnls_result)
-
-        loss = loss / mix_max.shape[1]
         features = mix_max.shape[1]
         w_arrays = [nnls(out.data.numpy(), mix_max.T[f])[0] for f in range(features)]
         nnls_w = np.stack(w_arrays, axis=-1)
@@ -219,19 +180,8 @@ def _train_unsupervised(
             w.data = w.clamp(min=0, max=math.inf)
 
         with torch.no_grad():
-            loss2, loss34, out34 = _find_loss(out, dist_mix_i_tensor)
-        if loss34 < best_34:
-            best_34_obj = out
-            best_34 = loss34
-            best_i = i
+            _, _, out34 = _find_loss(out, None)
         unsupervised_losses.append(unsupp_loss.detach().numpy())
-        supervised_losses.append(loss34)
-        if i % 500 == 0:
-            print(
-                f"i = {i}, loss =  {loss.item()} loss nnls {loss22} , total {total_loss} loss mix {loss * mix_max.shape[1]} loss criterion = {loss2} loss34 is {loss34} best {best_34}::{best_i}"
-            )
-            print(f'{datetime.now().strftime("%d-%m, %H:%M:%S")}')
-    print(f"Finish: best {best_34}::{best_i}")
     return out, out34, deep_nmf, best_34_obj, best_i, loss.item(), unsupervised_losses, supervised_losses
 
 
@@ -248,7 +198,6 @@ def train_with_generated_data_unsupervised(
     torch.autograd.set_detect_anomaly(True)
     rows, genes = mix_max.shape
     best_34 = 2
-    best_i = 0
     for train_index in range(1, config.unsupervised_train + 1):
         generated_mix, generated_dist = generate_dists(original_ref_mat.T, train_index * 0.0001, rows, cells)
         mix_max = _quantile_normalize(generated_mix, original_ref_mat)
@@ -279,20 +228,12 @@ def train_with_generated_data_unsupervised(
         with torch.no_grad():
             loss2, loss34, out34 = _find_loss(out, generated_dist)
         if train_index > 4000 and 0.125 < loss34 < 2:
-            print(f"break: i = {train_index}")
             return loss34
         if loss34 < best_34:
             best_34 = loss34
-            best_i = train_index
             checkpoint = {"deep_nmf": deep_nmf, "config": config, "loss34": loss34}
             with open(str(pickle_path), "wb") as f:
                 pickle.dump(checkpoint, f)
-
-        if train_index % 4000 == 0:
-            print(
-                f"i = {train_index}, loss =  {loss.item()} loss criterion = {loss2} loss34 is {loss34} best {best_34}::{best_i}"
-            )
-            print(f'{datetime.now().strftime("%d-%m, %H:%M:%S")}')
     return loss34
 
 
@@ -315,10 +256,6 @@ def train_with_generated_data(
         loss_values = train_supervised_one_sample(
             ref_mat, mix_frame.T, generated_dist, deep_nmf, optimizer, config.device
         )
-        if train_index % 8000 == 0:
-            print(
-                f"{datetime.now().strftime('%d-%m, %H:%M:%S')}: Train: Start train index: {train_index} with loss: {loss_values}"
-            )
         if (train_index % SUPERVISED_SPLIT == 0 and train_index != 0) or (train_index == supervised_train):
             config.supervised_train = train_index
             checkpoint = {"deep_nmf": deep_nmf, "config": config}
@@ -331,7 +268,6 @@ def train_supervised_one_sample(
     ref_mat: ndarray, mix_max: ndarray, dist_mat: tensor, deep_nmf: UnsuperNet, optimizer: Optimizer, device
 ):
     h_0_train = [nnls(ref_mat, mix_max[kk])[0] for kk in range(len(mix_max))]
-    # h_0_train = [nnls(ref_mat, mix_max[kk])[0] for kk in range(len(mix_max))]
     h_0_train = _tensoring(np.asanyarray([d / sum(d) for d in h_0_train])).to(device)
 
     criterion = nn.MSELoss(reduction="mean")
