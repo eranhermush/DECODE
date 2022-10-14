@@ -25,7 +25,7 @@ def generate_dists(signature_data: ndarray, std: float, mix_size: int, cells: Li
     """
     generates synthetic data
     uses known cell fractions from
-        https://www.miltenyibiotec.com/US-en/resources/macs-handbook/human-cells-and-organs/human-cell-sources/blood-human.htmL
+        https://www.miltenyibiotec.com/US-en/resources/macs-handbook/human-cells-and-organs/human-cell-sources/blood-human.html
     """
     dist = _get_randon_scope(cells, (mix_size, signature_data.shape[0]))
 
