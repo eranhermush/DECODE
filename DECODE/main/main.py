@@ -14,7 +14,7 @@ def main(
     run_main_real_data(ref_folder, output_folder, mixes_folder, true_prop_folder, index_dataset, output_folder_final)
 
 
-if __name__ == "__main1__":
+if __name__ == "__main__":
     output_folder = "<in this folder we will save the models after training with simulated data>"
     output_folder_final = "<in this folder we will save the final models>"
     ref_folder = "<path to signature matrix folder>"
