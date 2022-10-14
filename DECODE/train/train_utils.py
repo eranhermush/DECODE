@@ -21,6 +21,20 @@ CELL_MAPPER = {
 }
 
 
+def generate_dists(signature_data: ndarray, std: float, mix_size: int, cells: List[str]) -> Tuple[ndarray, ndarray]:
+    """
+    generates synthetic data
+    uses known cell fractions from
+        https://www.miltenyibiotec.com/US-en/resources/macs-handbook/human-cells-and-organs/human-cell-sources/blood-human.htmL
+    """
+    dist = _get_randon_scope(cells, (mix_size, signature_data.shape[0]))
+
+    mix = dist.dot(signature_data)
+    mix += np.random.normal(0, std, mix.shape)
+    mix = np.maximum(mix, 0)
+    return mix.T, dist
+
+
 def _init_decode(ref_mat: ndarray, mix_max: ndarray, config: DecodeConfig) -> Tuple[UnsuperNet, tensor, Optimizer]:
     features, n_components = ref_mat.shape
     samples, features = mix_max.shape
@@ -63,15 +77,6 @@ def _get_randon_scope(cells: List[str], result_dim: Tuple[int, int]) -> ndarray:
     random_vector = random_vector * diff + small_vector
     dirichlet = np.asanyarray([np.random.dirichlet(random_vector[i]) for i in range(len(random_vector))])
     return dirichlet
-
-
-def generate_dists(signature_data: ndarray, std: float, mix_size: int, cells: List[str]) -> Tuple[ndarray, ndarray]:
-    dist = _get_randon_scope(cells, (mix_size, signature_data.shape[0]))
-
-    mix = dist.dot(signature_data)
-    mix += np.random.normal(0, std, mix.shape)
-    mix = np.maximum(mix, 0)
-    return mix.T, dist
 
 
 def cost_tns(v, w, h, l_1=0, l_2=0):

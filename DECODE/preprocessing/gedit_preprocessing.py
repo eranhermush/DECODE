@@ -57,7 +57,6 @@ def _select_sub_genes_entropy(ref_mat: DataFrame, total_sigs: int) -> DataFrame:
 
 
 def _normalize_zero_one(ref_mat: np.ndarray, mix_mat: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
-    # merged_mat = pd.concat([ref_mat, mix_mat], axis=1)
     merged_mat = np.concatenate((ref_mat, mix_mat), axis=1)
     min_merged = merged_mat.min(axis=1)
     max_merged = merged_mat.max(axis=1)
