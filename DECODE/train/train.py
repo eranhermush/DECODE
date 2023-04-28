@@ -4,6 +4,7 @@ import pickle
 from datetime import datetime
 from pathlib import Path
 from typing import Tuple, List, Optional
+import gc
 
 import numpy as np
 import pandas as pd
@@ -129,6 +130,8 @@ def train_with_generated_data(
         loss_values = train_supervised_one_sample(
             ref_mat, mix_frame.T, generated_dist, deep_nmf, optimizer, config.device
         )
+        if train_index % 4000 == 0:
+            gc.collect()
         if train_index == supervised_train:
             checkpoint = {"deep_nmf": deep_nmf, "config": config}
             with open(str(config.output_path) + "GENERATED.pkl", "wb") as f:
@@ -213,6 +216,8 @@ def train_with_generated_data_unsupervised(
             nnls_error = nnls_error / 1000
         if train_index > 1000 and nnls_error < normalize_matrix_loss:
             return normalize_matrix_loss
+        if train_index % 4000 == 0:
+            gc.collect()
     return normalize_matrix_loss
 
 
