@@ -35,6 +35,8 @@ def train_manager(config: DecodeConfig, to_train: bool = True) -> Optional[Unsup
     mix_panda_original.columns = mix_panda_original.columns.str.upper()
 
     dist_panda = pd.read_csv(config.dist_path, sep="\t", index_col=0)
+    dist_panda.index = mix_panda_original.columns
+    dist_panda.index = dist_panda.index.str.upper()
 
     ref_panda_gedit, mix_panda, indexes, dist_panda = _preprocess_dataframes(
         ref_panda, mix_panda_original, dist_panda, config
@@ -90,10 +92,9 @@ def _train_decode(
 
     optimizer = optim.Adam(deep_nmf_original.parameters(), lr=config.lr)
     unsupervised_path = Path(str(config.output_path) + "_GENERATED-UNsup_new_loss_algo.pkl")
-    unsupervised_path_best = Path(str(config.output_path) + "_GENERATED-UNsupB_new_loss_algo.pkl")
-    if not (unsupervised_path.is_file() and unsupervised_path_best.is_file()):
+    if not (unsupervised_path.is_file()):
         normalize_loss = train_with_generated_data_unsupervised(
-            ref_mat, original_ref, mix_max, deep_nmf_original, optimizer, config, unsupervised_path_best, cells
+            ref_mat, original_ref, mix_max, deep_nmf_original, optimizer, config, unsupervised_path, cells
         )
         checkpoint = {"deep_nmf": deep_nmf_original, "config": config, "normalize_loss": normalize_loss}
         if not unsupervised_path.is_file():
@@ -212,11 +213,6 @@ def train_with_generated_data_unsupervised(
             nnls_error = nnls_error / 1000
         if train_index > 1000 and nnls_error < normalize_matrix_loss:
             return normalize_matrix_loss
-        if normalize_matrix_loss < best_normalize_matrix_loss:
-            best_normalize_matrix_loss = normalize_matrix_loss
-            checkpoint = {"deep_nmf": deep_nmf, "config": config, "normalize_loss": normalize_matrix_loss}
-            with open(str(pickle_path), "wb") as f:
-                pickle.dump(checkpoint, f)
     return normalize_matrix_loss
 
 

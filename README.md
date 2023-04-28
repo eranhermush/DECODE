@@ -1,6 +1,44 @@
 # DECODE
 
+## Deconvolution of Bulk Gene Expression Data into Cell Fractions
+### Abstract
+It is becoming clear that bulk gene expression measurements represent an average over very different
+cells. Elucidating the expression and abundance of each of the encompassed cells is key to disease
+understanding and precision medicine approaches. A first step in any such deconvolution is the
+inference of cell type abundances in the given mixture. Here we present DECODE, a deep learning
+method for the task that builds on a deep unfolded non-negative matrix factorization technique. We
+show that our method outperforms previous approaches on a range of synthetic and real data sets.
+
+
+This repository contains Python code for deconvolution of bulk gene expression data into estimates of cell fractions using DECODE.
+![DECODE flow](./ModelFlow.png)
+
+A sketch of the DECODE pipeline. From left to right: DECODE receives a bulk
+expression matrix and a signature of expression profiles. It first applies supervised training on
+training data that are synthetically generated using realistic cell fractions for I iterations. The
+resulting model is trained in an unsupervised fashion for another I iterations and yields $M^U$. This
+model is then trained on the real data to produce the final model.
+
+
+## Dependencies
+The code in this repository requires the following Python packages:
+
+- numpy
+- pandas
+- typing 
+- torch
+- attr 
+- pickle 
+- scipy
+- gc
+
+All of these packages can be installed using pip:
+
+`python3 -m pip install -r requirements.txt`
+
+## Usage
 To run the code you need to run the `main` function.
+
 `main` gets 5 parameters:
 ```
 output_folder: str,
@@ -16,3 +54,6 @@ index_dataset: int = 0
 `true_prop_folder` - this folder contains the desired cells of the datasets (for each dataset 'x.tsv' there is a file 'TruePropx.tsv' with one column - the desired cells). we are going to predict these cells</br>
 `ref_folder` - this folder contains signature matrices </br>
 `index_dataset` - The index of the dataset in the `mixes_folder` (the default is to run the DECODE algorithm on the first file) 
+
+## Contributing
+Contributions to this repository are welcome! If you have any bug reports, feature requests, or other suggestions, please feel free to open an issue or submit a pull request
