@@ -21,6 +21,9 @@ model is then trained on the real data to produce the final model.
 
 
 ## Dependencies
+DECODE was developed and tested on python 3.10. It was not tested on lower versions of python, but should also be usable on python 3.8. DECODE does not require any special hardware (e.g. GPU), however we recommend to run it with GPU.
+
+
 The code in this repository requires the following Python packages:
 
 - numpy
