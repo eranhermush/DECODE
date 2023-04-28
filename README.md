@@ -9,6 +9,7 @@ inference of cell type abundances in the given mixture. Here we present DECODE, 
 method for the task that builds on a deep unfolded non-negative matrix factorization technique. We
 show that our method outperforms previous approaches on a range of synthetic and real data sets.
 
+### This repository
 
 This repository contains Python code for deconvolution of bulk gene expression data into estimates of cell fractions using DECODE.
 ![DECODE flow](./ModelFlow.png)
