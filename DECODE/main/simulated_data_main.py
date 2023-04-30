@@ -3,8 +3,8 @@ from pathlib import Path
 
 import torch
 
-from DECODE.preprocessing.decode_config import DecodeConfig
-from DECODE.train.train import train_manager
+from preprocessing.decode_config import DecodeConfig
+from train.train import train_manager
 
 
 def run_main_simulated(ref_folder, output_folder, mix_folder, dist_folder, index):

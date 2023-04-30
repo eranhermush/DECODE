@@ -7,7 +7,7 @@ from pandas import DataFrame
 from torch import tensor
 from torch.optim import Optimizer
 
-from DECODE.layers.unsuper_net import UnsuperNet
+from layers.unsuper_net import UnsuperNet
 
 
 @define

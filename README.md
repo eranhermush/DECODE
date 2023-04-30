@@ -31,10 +31,8 @@ The code in this repository requires the following Python packages:
 - pandas
 - typing 
 - torch
-- attr 
-- pickle 
+- attrs
 - scipy
-- gc
 
 All of these packages can be installed using pip:
 
@@ -53,11 +51,17 @@ output_folder_final: str,
 index_dataset: int = 0
 ```
 `output_folder` - in this folder the model saves its temporary models, after learning with simulated data  (can be tmp folder) </br>
-`output_folder_final` - In this folder the model saves the final results </br>
+`ref_folder` - this folder contains signature matrices </br>
 `mixes_folder` - this folder contains the datasets (bulk expressions) </br>
 `true_prop_folder` - this folder contains the desired cells of the datasets (for each dataset 'x.tsv' there is a file 'TruePropx.tsv' with one column - the desired cells). we are going to predict these cells</br>
-`ref_folder` - this folder contains signature matrices </br>
+`output_folder_final` - In this folder the model saves the final results </br>
 `index_dataset` - The index of the dataset in the `mixes_folder` (the default is to run the DECODE algorithm on the first file) 
 
+For example:
+`mkdir output`
+`cd DECODE`
+`main('output', 'examples/signatures', 'examples/mixes', 'examples/true_proportions', 'output', 0)`
+
+(Note that you need to add DECODE path to PYTHONPATH env-var before running)
 ## Contributing
 Contributions to this repository are welcome! If you have any bug reports, feature requests, or other suggestions, please feel free to open an issue or submit a pull request

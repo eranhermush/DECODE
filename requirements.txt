@@ -2,7 +2,5 @@ numpy
 pandas
 typing
 torch
-attr
-pickle
+attrs
 scipy
-gc

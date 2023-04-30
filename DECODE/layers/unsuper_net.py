@@ -1,6 +1,6 @@
 import torch
 
-from DECODE.layers.unsuper_layer import UnsuperLayer
+from layers.unsuper_layer import UnsuperLayer
 import torch.nn as nn
 
 EPSILON = torch.finfo(torch.float32).eps

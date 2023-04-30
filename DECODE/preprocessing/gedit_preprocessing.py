@@ -5,7 +5,7 @@ import pandas as pd
 from pandas import DataFrame
 from scipy.special import entr
 
-from DECODE.utils.data_frame_utils import get_shared_indexes
+from utils.data_frame_utils import get_shared_indexes
 
 ZERO_INCOMPLETE_SIZE = 0.5
 
@@ -52,7 +52,7 @@ def _select_sub_genes_entropy(ref_mat: DataFrame, total_sigs: int) -> DataFrame:
     left_gens = all_sigs - len(genes)
     if left_gens > 0 and entropy_max_index.shape[0] > len(genes):
         other_genes = entropy_max_index.drop(genes).nlargest(left_gens, columns="entropy").reset_index().iloc[:, 0]
-        genes = genes.append(other_genes)
+        genes = pd.concat([genes, other_genes])
     return ref_mat.loc[genes]
 
 

@@ -5,9 +5,9 @@ from pathlib import Path
 import pandas as pd
 import torch
 from torch import optim
+from preprocessing.decode_config import DecodeConfig
 
-from DECODE.preprocessing.decode_config import DecodeConfig
-from DECODE.train.train import train_manager, train_unsupervised_real_data
+from train.train import train_manager, train_unsupervised_real_data
 
 
 def run_main_real_data(ref_folder, output_folder, mix_folder, dist_folder, index, output_folder_for_results=None):
@@ -37,14 +37,9 @@ def run_main_real_data(ref_folder, output_folder, mix_folder, dist_folder, index
     best_loss_ref = 200
     best_nmf_ref = None
 
-    best_of_best_loss_ref = 200
-    best_of_best_nmf_ref = None
-
     for ref_name in refs:
-        best_of_best_loss = 200
         best_loss = 200
         learner_best_supervised = None
-        learner_best = None
 
         mix_p = Path(mix)
         dist_path = Path(dist_folder) / f"TrueProps{mix_p.name}"
@@ -66,7 +61,6 @@ def run_main_real_data(ref_folder, output_folder, mix_folder, dist_folder, index
         )
         print(config.full_str())
         unsupervised_path = Path(str(config.output_path) + "_GENERATED-UNsup_new_loss_algo.pkl")
-        unsupervised_path_best = Path(str(config.output_path) + "_GENERATED-UNsupB_new_loss_algo.pkl")
         if unsupervised_path.is_file():
             with open(str(unsupervised_path), "rb") as input_file:
                 checkpoint = pickle.load(input_file)
@@ -79,39 +73,14 @@ def run_main_real_data(ref_folder, output_folder, mix_folder, dist_folder, index
                 learner_best_supervised.optimizer = optim.Adam(best_alg.parameters(), lr=config.lr)
         else:
             print(f"doesnt have {unsupervised_path} file")
-        if unsupervised_path_best.is_file():
-            with open(str(unsupervised_path_best), "rb") as input_file:
-                checkpoint = pickle.load(input_file)
-            loss = checkpoint["normalize_loss"]
-            if loss < best_of_best_loss:
-                best_of_best_loss = loss
-                best_of_best_alg = checkpoint["deep_nmf"]
-                learner_best = train_manager(config, False)
-                learner_best.deep_nmf = best_of_best_alg
-                learner_best.optimizer = optim.Adam(best_of_best_alg.parameters(), lr=config.lr)
-        else:
-            print(f"doesnt have {unsupervised_path_best} file")
         if learner_best_supervised is not None:
             for iteration_size in [101]:
                 learner_best_supervised.config.supervised_train = iteration_size
-                learner_best.config.supervised_train = iteration_size
                 print(f"best is {learner_best_supervised.config.full_str()}")
-                print(f"best is {learner_best.config.full_str()}")
                 _, normalize_matrix_out, _, _, _, loss = train_unsupervised_real_data(learner_best_supervised)
                 if loss < best_loss_ref:
                     best_loss_ref = loss
                     best_nmf_ref = learner_best_supervised, normalize_matrix_out
-
-                _, normalize_matrix_out, _, _, _, loss = train_unsupervised_real_data(learner_best)
-                if loss < best_of_best_loss_ref:
-                    best_of_best_loss_ref = loss
-                    best_of_best_nmf_ref = learner_best, normalize_matrix_out
-
-    if best_of_best_loss_ref < best_loss_ref:
-        dist_new = best_of_best_nmf_ref[0].dist_mix_i.copy()
-        dist_new = pd.DataFrame(best_of_best_nmf_ref[1].cpu().detach().numpy(), columns=dist_new.columns)
-        dist_new.to_csv(best_of_best_nmf_ref[0].config.unsup_output_path, sep="\t")
-        return
 
     dist_new = best_nmf_ref[0].dist_mix_i.copy()
     dist_new = pd.DataFrame(best_nmf_ref[1].cpu().detach().numpy(), columns=dist_new.columns)

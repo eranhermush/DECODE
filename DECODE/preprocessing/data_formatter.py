@@ -2,7 +2,7 @@ from typing import Tuple, Optional
 
 from pandas import DataFrame, Index
 
-from DECODE.utils.data_frame_utils import get_shared_indexes
+from utils.data_frame_utils import get_shared_indexes
 
 OTHER_NAME = "Other"
 

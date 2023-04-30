@@ -15,11 +15,11 @@ from scipy.optimize import nnls
 from torch import nn, tensor, optim
 from torch.optim import Optimizer
 
-from DECODE.layers.unsuper_net import UnsuperNet
-from DECODE.preprocessing.data_formatter import format_dataframe
-from DECODE.preprocessing.decode_config import UnsupervisedLearner, DecodeConfig
-from DECODE.preprocessing.gedit_preprocessing import _quantile_normalize, _normalize_zero_one, run_gedit_preprocessing
-from DECODE.train.train_utils import _tensoring, generate_dists, cost_tns, _init_decode
+from layers.unsuper_net import UnsuperNet
+from preprocessing.data_formatter import format_dataframe
+from preprocessing.decode_config import UnsupervisedLearner, DecodeConfig
+from preprocessing.gedit_preprocessing import _quantile_normalize, _normalize_zero_one, run_gedit_preprocessing
+from train.train_utils import _tensoring, generate_dists, cost_tns, _init_decode
 
 
 def train_manager(config: DecodeConfig, to_train: bool = True) -> Optional[UnsupervisedLearner]:
@@ -36,8 +36,6 @@ def train_manager(config: DecodeConfig, to_train: bool = True) -> Optional[Unsup
     mix_panda_original.columns = mix_panda_original.columns.str.upper()
 
     dist_panda = pd.read_csv(config.dist_path, sep="\t", index_col=0)
-    dist_panda.index = mix_panda_original.columns
-    dist_panda.index = dist_panda.index.str.upper()
 
     ref_panda_gedit, mix_panda, indexes, dist_panda = _preprocess_dataframes(
         ref_panda, mix_panda_original, dist_panda, config

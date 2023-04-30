@@ -7,8 +7,8 @@ from scipy.optimize import nnls
 from torch import tensor, optim
 from torch.optim import Optimizer
 
-from DECODE.layers.unsuper_net import UnsuperNet
-from DECODE.preprocessing.decode_config import DecodeConfig
+from layers.unsuper_net import UnsuperNet
+from preprocessing.decode_config import DecodeConfig
 
 EPSILON = torch.finfo(torch.float32).eps
 CELL_MAPPER = {
