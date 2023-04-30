@@ -57,10 +57,10 @@ index_dataset: int = 0
 `output_folder_final` - In this folder the model saves the final results </br>
 `index_dataset` - The index of the dataset in the `mixes_folder` (the default is to run the DECODE algorithm on the first file) 
 
-For example:
-`mkdir output`
-`cd DECODE`
-`main('output', 'examples/signatures', 'examples/mixes', 'examples/true_proportions', 'output', 0)`
+For example:</br>
+`mkdir output`</br>
+`cd DECODE`</br>
+`main('output', 'examples/signatures', 'examples/mixes', 'examples/true_proportions', 'output', 0)`</br>
 
 (Note that you need to add DECODE path to PYTHONPATH env-var before running)
 ## Contributing
