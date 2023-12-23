@@ -1,5 +1,6 @@
-from main.real_data_main import run_main_real_data
 from main.simulated_data_main import run_main_simulated
+from main.real_data_main import run_main_real_data
+
 
 def main(
     output_folder: str,

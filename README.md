@@ -12,7 +12,7 @@ show that our method outperforms previous approaches on a range of synthetic and
 ### This repository
 
 This repository contains Python code for deconvolution of bulk gene expression data into estimates of cell fractions using DECODE.
-![DECODE flow](./ModelFlow.png)
+![DECODE flow](./ModelFlow3.png)
 
 A sketch of the DECODE pipeline. From left to right: DECODE receives a bulk
 expression matrix and a signature of expression profiles. It first applies supervised training on
@@ -61,6 +61,12 @@ For example:</br>
 `mkdir output`</br>
 `cd DECODE`</br>
 `main('output', 'examples/signatures', 'examples/mixes', 'examples/true_proportions', 'output', 0)`</br>
+
+## Example
+`pip install -e .`
+In ipython run the following command:
+`from DECODE.main.main_file import main`
+`main('examples/output/', 'examples/signatures', 'examples/mixes', 'examples/true_proportions', 'examples/output', 0)`
 
 (Note that you need to add DECODE path to PYTHONPATH env-var before running)
 ## Contributing

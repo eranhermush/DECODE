@@ -39,7 +39,7 @@ def run_main_simulated(ref_folder, output_folder, mix_folder, dist_folder, index
             mix_path=mix_p,
             dist_path=dist_path,
             num_layers=4,
-            supervised_train=60000,
+            supervised_train=6000,
             rewrite_exists_output=True,
             l1_regularization=0,
             l2_regularization=0,
