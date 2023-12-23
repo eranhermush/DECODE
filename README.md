@@ -64,7 +64,7 @@ For example:</br>
 
 ## Example
 `pip install -e .` </br>
-In ipython run the following command: </br>
+In ipython run the following commands: </br>
 `from DECODE.main.main_file import main` </br>
 `main('examples/output/', 'examples/signatures', 'examples/mixes', 'examples/true_proportions', 'examples/output', 0)`
 
