@@ -63,9 +63,9 @@ For example:</br>
 `main('output', 'examples/signatures', 'examples/mixes', 'examples/true_proportions', 'output', 0)`</br>
 
 ## Example
-`pip install -e .`
-In ipython run the following command:
-`from DECODE.main.main_file import main`
+`pip install -e .`</br>
+In ipython run the following command:</br>
+`from DECODE.main.main_file import main`</br>
 `main('examples/output/', 'examples/signatures', 'examples/mixes', 'examples/true_proportions', 'examples/output', 0)`
 
 (Note that you need to add DECODE path to PYTHONPATH env-var before running)
